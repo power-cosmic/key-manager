@@ -2,6 +2,7 @@
 ;
 /*jshint +W032 */
 (function(root, factory) {
+  /* istanbul ignore next */
   if (typeof define === 'function') {
     define(factory);
   } else if (typeof exports === 'object') {
@@ -44,16 +45,19 @@
     this.keys[key] = false;
   };
 
+
   var KeyManager = function() {
     this.actions = {};
     this.keymaps = {};
 
+    var that = this;
+
     window.onkeydown = function(e) {
-      this.keyDown(e.keyCode);
+      that.keyDown(e.keyCode);
     };
 
     window.onkeyup = function(e) {
-      this.keyUp(e.keyCode);
+      that.keyUp(e.keyCode);
     }
   };
 
