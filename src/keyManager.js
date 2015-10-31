@@ -1,61 +1,66 @@
-"use strict"
+/*jshint -W032 */
+;
+/*jshint +W032 */
+(function(root, factory) {
+  /* istanbul ignore next */
+  if (typeof define === 'function') {
+    define(factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.KeyManager = factory();
+  }
+}(this, function() {
+  var ActionManager = function(onPress) {
+    this.keys = {};
+    this.onPress = onPress;
+  };
 
-define([
-    'd2/utils/vector',
-    'keyManager/keyManager'
-  ], function(Vector, KeyManager) {
+  ActionManager.prototype.isDown = function() {
+    for (var key in this.keys) {
+      if (this.keys[key]) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-    const LEFT    = 37;
-    const UP      = 38;
-    const RIGHT   = 39;
-    const DOWN    = 40;
-    const ENTER   = 13;
-    const SPACE   = 32;
+  ActionManager.prototype.addKey = function(key, isDown) {
+    isDown = isDown || false;
+    this.keys[key] = isDown;
+  }
 
-    const A       = 65;
-    const D       = 68;
-    const W       = 87;
-    const S       = 83;
+  ActionManager.prototype.removeKey = function(key) {
+    delete this.keys[key];
+  }
 
-    var KeyboardController = function() {
-      this.velocity = new Vector();
+  ActionManager.prototype.keyDown = function(key) {
+    this.keys[key] = true;
+    if (this.onPress) {
+      this.onPress();
+    }
+  };
 
-      // define actions
-      this.registerAction(LEFT);
-      this.registerAction(UP);
-      this.registerAction(RIGHT);
-      this.registerAction(DOWN);
-      this.registerAction(ENTER, function() {
-        this.enterListener && this.enterListener();
-      }.bind(this));
-      this.registerAction(SPACE, function() {
-        this.spaceListener && this.spaceListener();
-      }.bind(this));
+  ActionManager.prototype.keyUp = function(key) {
+    this.keys[key] = false;
+  };
 
-      // register keys to actions
-      this.registerKey(LEFT, LEFT);
-      this.registerKey(A, LEFT);
-      this.registerKey(UP, UP);
-      this.registerKey(W, UP);
-      this.registerKey(RIGHT, RIGHT);
-      this.registerKey(D, RIGHT);
-      this.registerKey(DOWN, DOWN);
-      this.registerKey(S, DOWN);
-      this.registerKey(ENTER, ENTER);
 
-      this.clearListeners();
+  var KeyManager = function() {
+    this.actions = {};
+    this.keymaps = {};
+
+    var that = this;
+
+    window.onkeydown = function(e) {
+      that.keyDown(e.keyCode);
     };
 
-    KeyboardController.prototype = new KeyManager();
+    window.onkeyup = function(e) {
+      that.keyUp(e.keyCode);
+    }
+  };
 
-<<<<<<< HEAD
-    KeyboardController.prototype.LEFT   = LEFT;
-    KeyboardController.prototype.UP     = UP;
-    KeyboardController.prototype.RIGHT  = RIGHT;
-    KeyboardController.prototype.DOWN   = DOWN;
-    KeyboardController.prototype.SPACE  = SPACE;
-    KeyboardController.prototype.ENTER  = ENTER;
-=======
   KeyManager.prototype.registerAction = function(alias, onPress) {
     var action = this.actions[alias];
     if (action) {
@@ -64,42 +69,37 @@ define([
       this.actions[alias] = new ActionManager(onPress)
     }
   };
->>>>>>> fixStuff
 
-    KeyboardController.prototype.clearListeners = function() {
-      this.enterListener = null;
-      this.spaceListener = null;
-    };
+  KeyManager.prototype.unregisterAction = function(alias) {
+    delete this.actions[alias];
+  };
 
-    KeyboardController.prototype.onEnter = function(callback) {
-      this.enterListener = callback;
-    };
+  KeyManager.prototype.registerKey = function(key, alias, isDown) {
+    this.actions[alias].addKey(key, isDown);
+    this.keymaps[key] = this.actions[alias];
+  };
 
-    KeyboardController.prototype.onSpace = function(callback) {
-      this.spaceListener = callback;
-    };
 
-    KeyboardController.prototype.getVelocity = function() {
-      var x = 0,
-          y = 0;
+  KeyManager.prototype.unregisterKey = function(key, alias) {
+    this.actions[alias].removeKey(key);
+    delete this.keymaps[key];
+  };
 
-      if (this.isDown(LEFT)) {
-        x -= 1;
-      }
-      if (this.isDown(RIGHT)) {
-        x += 1;
-      }
-      if (this.isDown(UP)) {
-        y -= 1;
-      }
-      if (this.isDown(DOWN)) {
-        y += 1;
-      }
+  KeyManager.prototype.keyDown = function(key) {
+    if (this.keymaps[key]) {
+      this.keymaps[key].keyDown(key);
+    }
+  };
 
-      return this.velocity
-          .set(x, y)
-          .normalize();
-    };
+  KeyManager.prototype.keyUp = function(key) {
+    if (this.keymaps[key]) {
+      this.keymaps[key].keyUp(key);
+    }
+  };
 
-    return KeyboardController;
-});
+  KeyManager.prototype.isDown = function(alias) {
+    return this.actions[alias].isDown();
+  };
+
+  return KeyManager;
+}));
