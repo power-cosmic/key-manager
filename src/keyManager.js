@@ -62,7 +62,12 @@
   };
 
   KeyManager.prototype.registerAction = function(alias, onPress) {
-    this.actions[alias] = new ActionManager(onPress)
+    var action = this.actions[alias];
+    if (action) {
+      action.onPress = onPress;
+    } else {
+      this.actions[alias] = new ActionManager(onPress)
+    }
   };
 
   KeyManager.prototype.unregisterAction = function(alias) {
