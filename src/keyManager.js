@@ -48,12 +48,23 @@ define([
 
     KeyboardController.prototype = new KeyManager();
 
+<<<<<<< HEAD
     KeyboardController.prototype.LEFT   = LEFT;
     KeyboardController.prototype.UP     = UP;
     KeyboardController.prototype.RIGHT  = RIGHT;
     KeyboardController.prototype.DOWN   = DOWN;
     KeyboardController.prototype.SPACE  = SPACE;
     KeyboardController.prototype.ENTER  = ENTER;
+=======
+  KeyManager.prototype.registerAction = function(alias, onPress) {
+    var action = this.actions[alias];
+    if (action) {
+      action.onPress = onPress;
+    } else {
+      this.actions[alias] = new ActionManager(onPress)
+    }
+  };
+>>>>>>> fixStuff
 
     KeyboardController.prototype.clearListeners = function() {
       this.enterListener = null;
