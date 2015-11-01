@@ -74,6 +74,12 @@
     delete this.actions[alias];
   };
 
+  KeyManager.prototype.unregisterAllActions = function() {
+    for (var action in this.actions) {
+      this.actions[action].onPress = null;
+    }
+  };
+
   KeyManager.prototype.registerKey = function(key, alias, isDown) {
     this.actions[alias].addKey(key, isDown);
     this.keymaps[key] = this.actions[alias];
